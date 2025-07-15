@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notes App</title>
+    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIk5vdGVzIEFwcCIsCiAgInNob3J0X25hbWUiOiAiTm90ZXMiLAogICJzdGFydF91cmwiOiAiLyIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzAwMzM2NiIsCiAgInRoZW1lX2NvbG9yIjogIiMwMDMzNjYiLAogICJpY29ucyI6IFsKICAgIHsKICAgICAgInNyYyI6ICJkYXRhOmltYWdlL3N2Zyt4bWw7YmFzZTY0LFBITjJaeUIzYVdSMGFEMGlNekFpSUdobGFXZG9kRDBpTXpBaUlIWnBaWGRDYjNnOUlqQWdNQ0F6TUNBek1DSWdlRzFzYm5NOUltaDBkSEE2THk5M2QzY3Vkek11YjNKbkx6SXdNREF2YzNabklqNEtJQ0E4Y21WamRDQjNhV1IwYUQwaU16QWlJR2hsYVdkb2REMGlNekFpSUdacGJHeDBJaU16TXpaaU1ESWlMejRLSUNBOGRHVjRkQ0I0UFNJeE5TSWdlVDBpTVRVaUlHWnBiR3c5SW1aaVptWmlJaUJtYjI1MExYTnBlbVU5SWpFMGNIZ2lQazRzTHpzZ0xTQU9jMngxZEROU0lEMGdJQzR3TXpjZ0xTQXVOamNnTFNBdU1qUXVOams4TDNSbGVIUStDand2YzNabkQiLAogICAgICAic2l6ZXMiOiAiMzB4MzAiLAogICAgICAidHlwZSI6ICJpbWFnZS9zdmcreG1sIgogICAgfQogIF0KfQ==">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body.dark-mode {
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+        }
+
+        .header {
+            background-color: #003366;
+            color: white;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            margin-right: 10px;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            background-color: #2d5a2d;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn:hover {
+            background-color: #1a4a1a;
+        }
+
+        .btn-red {
+            background-color: #ff6b6b;
+        }
+
+        .btn-red:hover {
+            background-color: #ff5252;
+        }
+
+        .main-content {
+            padding: 20px;
+            max-width: 100%;
+        }
+
+        .category-list, .subcategory-list, .note-list {
+            list-style: none;
+        }
+
+        .category-item, .subcategory-item, .note-item {
+            background: white;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.2s;
+            user-select: none;
+        }
+
+        .dark-mode .category-item, 
+        .dark-mode .subcategory-item, 
+        .dark-mode .note-item {
+            background: #333;
+            color: #e0e0e0;
+        }
+
+        .category-item:hover, .subcategory-item:hover, .note-item:hover {
+            transform: translateY(-2px);
+        }
+
+        .note-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .note-preview {
+            flex: 1;
+        }
+
+        .note-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .note-date {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .dark-mode .note-date {
+            color: #aaa;
+        }
+
+        .delete-btn {
+            background-color: #ffcccc;
+            border: none;
+            padding: 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        .delete-btn:hover {
+            background-color: #ffaaaa;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            margin: 20% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 400px;
+        }
+
+        .dark-mode .modal-content {
+            background: #333;
+            color: #e0e0e0;
+        }
+
+        .modal-content input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+            color: #333;
+        }
+
+        .dark-mode .modal-content input[type="text"] {
+            background: #444;
+            color: #e0e0e0;
+            border-color: #555;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .editor-container {
+            padding: 20px;
+        }
+
+        .shared-notes {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .shared-note {
+            flex: 1;
+            min-height: 100px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            resize: vertical;
+        }
+
+        .dark-mode .shared-note {
+            background: #333;
+            color: #e0e0e0;
+            border-color: #555;
+        }
+
+        .note-content {
+            width: 100%;
+            min-height: 200px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            resize: vertical;
+            font-family: Arial, sans-serif;
+        }
+
+        .dark-mode .note-content {
+            background: #333;
+            color: #e0e0e0;
+            border-color: #555;
+        }
+
+        .image-buttons {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .image-preview {
+            max-width: 100%;
+            max-height: 200px;
+            margin: 10px 0;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .fullscreen-image {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            cursor: pointer;
+        }
+
+        .fullscreen-image img {
+            max-width: 90%;
+            max-height: 90%;
+        }
+
+        .settings-panel {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px;
+        }
+
+        .dark-mode .settings-panel {
+            background: #333;
+        }
+
+        .setting-item {
+            margin: 20px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background: #ccc;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .toggle-switch.active {
+            background: #2d5a2d;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+
+        .toggle-switch.active .toggle-slider {
+            transform: translateX(30px);
+        }
+
+        input[type="range"] {
+            width: 150px;
+        }
+
+        .font-size-display {
+            margin-left: 10px;
+            font-weight: bold;
+        }
+
+        .dragging {
+            opacity: 0.5;
+        }
+
+        .drag-over {
+            border-top: 3px solid #2d5a2d;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .app-title {
+            font-size: 20px;
+            font-weight: bold;
+            text-align: center;
+            flex: 1;
+        }
+
+        .date-time {
+            font-size: 14px;
+            color: #ccc;
+            margin-left: 10px;
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                padding: 10px;
+            }
+            
+            .header-title {
+                font-size: 16px;
+            }
+            
+            .btn {
+                padding: 6px 8px;
+                font-size: 12px;
+            }
+            
+            .main-content {
+                padding: 10px;
+            }
+            
+            .shared-notes {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Écran d'accueil -->
+    <div id="home-screen" class="screen active">
+        <div class="header">
+            <div class="app-title">Notes App</div>
+            <div class="header-buttons">
+                <button class="btn" onclick="createCategory()">+</button>
+                <button class="btn" onclick="showSettings()">⚙️</button>
+                <button class="btn" onclick="saveData()">Save</button>
+            </div>
+        </div>
+        <div class="main-content">
+            <ul id="category-list" class="category-list"></ul>
+        </div>
+    </div>
+
+    <!-- Écran des sous-catégories -->
+    <div id="subcategory-screen" class="screen">
+        <div class="header">
+            <div class="header-left">
+                <button class="back-btn" onclick="showHomeScreen()">&lt;</button>
+                <span class="header-title" id="category-title"></span>
+            </div>
+            <div class="header-buttons">
+                <button class="btn" onclick="createSubcategory()">+</button>
+                <button class="btn" onclick="showSettings()">⚙️</button>
+                <button class="btn" onclick="saveData()">Save</button>
+            </div>
+        </div>
+        <div class="main-content">
+            <ul id="subcategory-list" class="subcategory-list"></ul>
+        </div>
+    </div>
+
+    <!-- Écran des notes -->
+    <div id="notes-screen" class="screen">
+        <div class="header">
+            <div class="header-left">
+                <button class="back-btn" onclick="showSubcategoryScreen()">&lt;</button>
+                <span class="header-title" id="subcategory-title"></span>
+            </div>
+            <div class="header-buttons">
+                <button class="btn" onclick="createNote()">+</button>
+                <button class="btn" onclick="showSettings()">⚙️</button>
+                <button class="btn" onclick="saveData()">Save</button>
+            </div>
+        </div>
+        <div class="main-content">
+            <ul id="note-list" class="note-list"></ul>
+        </div>
+    </div>
+
+    <!-- Écran d'édition -->
+    <div id="editor-screen" class="screen">
+        <div class="header">
+            <div class="header-left">
+                <button class="back-btn" onclick="showNotesScreen()">&lt;</button>
+                <span class="header-title" id="note-subcategory-title"></span>
+                <span class="date-time" id="note-date-time"></span>
+            </div>
+        </div>
+        <div class="editor-container">
+            <div class="shared-notes">
+                <textarea class="shared-note" id="shared-note-1" placeholder="Zone partagée 1"></textarea>
+                <textarea class="shared-note" id="shared-note-2" placeholder="Zone partagée 2"></textarea>
+            </div>
+            <textarea class="note-content" id="note-content" placeholder="Contenu de la note"></textarea>
+            <div class="image-buttons">
+                <button class="btn" onclick="document.getElementById('gallery-input').click()">📷 Galerie</button>
+                <button class="btn" onclick="document.getElementById('camera-input').click()">📸 Appareil photo</button>
+            </div>
+            <div id="image-container"></div>
+        </div>
+    </div>
+
+    <!-- Écran des paramètres -->
+    <div id="settings-screen" class="screen">
+        <div class="header">
+            <div class="header-left">
+                <button class="back-btn" onclick="hideSettings()">&lt;</button>
+                <span class="header-title">Paramètres</span>
+            </div>
+        </div>
+        <div class="settings-panel">
+            <div class="setting-item">
+                <label>Mode sombre</label>
+                <div class="toggle-switch" id="dark-mode-toggle" onclick="toggleDarkMode()">
+                    <div class="toggle-slider"></div>
+                </div>
+            </div>
+            <div class="setting-item">
+                <button class="btn" onclick="exportData()">Export</button>
+            </div>
+            <div class="setting-item">
+                <button class="btn" onclick="document.getElementById('import-input').click()">Import</button>
+            </div>
+            <div class="setting-item">
+                <label>Taille du texte</label>
+                <div>
+                    <input type="range" id="font-size-range" min="12" max="24" value="19" onchange="updateFontSize()">
+                    <span class="font-size-display" id="font-size-display">19px</span>
+                </div>
+            </div>
+            <div class="setting-item">
+                <button class="btn btn-red" onclick="deleteAllData()">Supprimer toutes les données</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modales -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <h3 id="modal-title"></h3>
+            <input type="text" id="modal-input">
+            <div class="modal-buttons">
+                <button class="btn" onclick="confirmModal()">Confirmer</button>
+                <button class="btn" onclick="hideModal()">Annuler</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="context-modal" class="modal">
+        <div class="modal-content">
+            <h3>Actions</h3>
+            <div class="modal-buttons">
+                <button class="btn" onclick="renameItem()">Renommer</button>
+                <button class="btn btn-red" onclick="deleteItem()">Supprimer</button>
+                <button class="btn" onclick="hideContextModal()">Annuler</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inputs cachés -->
+    <input type="file" id="gallery-input" accept="image/*" onchange="handleImageUpload(event)">
+    <input type="file" id="camera-input" accept="image/*" capture="environment" onchange="handleImageUpload(event)">
+    <input type="file" id="import-input" accept=".json" onchange="importData(event)">
+
+    <script>
+        // Variables globales
+        let appData = {
+            categories: [],
+            sharedNotes: { note1: '', note2: '' },
+            settings: {
+                darkMode: false,
+                fontSize: 19
+            }
+        };
+
+        let currentCategory = null;
+        let currentSubcategory = null;
+        let currentNote = null;
+        let modalAction = null;
+        let contextItem = null;
+        let draggedElement = null;
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+            updateFontSize();
+            if (appData.settings.darkMode) {
+                document.body.classList.add('dark-mode');
+                document.getElementById('dark-mode-toggle').classList.add('active');
+            }
+            document.getElementById('font-size-range').value = appData.settings.fontSize;
+            document.getElementById('font-size-display').textContent = appData.settings.fontSize + 'px';
+        });
+
+        // Gestion des écrans
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function showHomeScreen() {
+            showScreen('home-screen');
+            renderCategories();
+        }
+
+        function showSubcategoryScreen() {
+            showScreen('subcategory-screen');
+            document.getElementById('category-title').textContent = currentCategory.name;
+            renderSubcategories();
+        }
+
+        function showNotesScreen() {
+            showScreen('notes-screen');
+            document.getElementById('subcategory-title').textContent = currentSubcategory.name;
+            renderNotes();
+        }
+
+        function showEditorScreen() {
+            showScreen('editor-screen');
+            document.getElementById('note-subcategory-title').textContent = currentSubcategory.name;
+            document.getElementById('note-date-time').textContent = new Date(currentNote.createdAt).toLocaleString();
+            loadNoteContent();
+        }
+
+        // Gestion des catégories
+        function createCategory() {
+            modalAction = 'create-category';
+            showModal('Créer une catégorie', '');
+        }
+
+        function renderCategories() {
+            const list = document.getElementById('category-list');
+            list.innerHTML = '';
+            
+            appData.categories.forEach((category, index) => {
+                const li = document.createElement('li');
+                li.className = 'category-item';
+                li.textContent = category.name;
+                li.draggable = true;
+                li.dataset.index = index;
+                
+                li.addEventListener('click', () => {
+                    currentCategory = category;
+                    showSubcategoryScreen();
+                });
+                
+                li.addEventListener('contextmenu', (e) => {
+                    e.preventDefault();
+                    contextItem = { type: 'category', index };
+                    showContextModal();
+                });
+
+                // Drag and drop
+                li.addEventListener('dragstart', handleDragStart);
+                li.addEventListener('dragover', handleDragOver);
+                li.addEventListener('drop', handleDrop);
+                li.addEventListener('dragend', handleDragEnd);
+                
+                list.appendChild(li);
+            });
+        }
+
+        // Gestion des sous-catégories
+        function createSubcategory() {
+            modalAction = 'create-subcategory';
+            showModal('Créer une sous-catégorie', '');
+        }
+
+        function renderSubcategories() {
+            const list = document.getElementById('subcategory-list');
+            list.innerHTML = '';
+            
+            if (!currentCategory.subcategories) {
+                currentCategory.subcategories = [];
+            }
+            
+            currentCategory.subcategories.forEach((subcategory, index) => {
+                const li = document.createElement('li');
+                li.className = 'subcategory-item';
+                li.textContent = subcategory.name;
+                li.draggable = true;
+                li.dataset.index = index;
+                
+                li.addEventListener('click', () => {
+                    currentSubcategory = subcategory;
+                    showNotesScreen();
+                });
+                
+                li.addEventListener('contextmenu', (e) => {
+                    e.preventDefault();
+                    contextItem = { type: 'subcategory', index };
+                    showContextModal();
+                });
+
+                // Drag and drop
+                li.addEventListener('dragstart', handleDragStart);
+                li.addEventListener('dragover', handleDragOver);
+                li.addEventListener('drop', handleDrop);
+                li.addEventListener('dragend', handleDragEnd);
+                
+                list.appendChild(li);
+            });
+        }
+
+        // Gestion des notes
+        function createNote() {
+            const newNote = {
+                id: Date.now(),
+                createdAt: new Date().toISOString(),
+                content: '',
+                images: []
+            };
+            
+            if (!currentSubcategory.notes) {
+                currentSubcategory.notes = [];
+            }
+            
+            currentSubcategory.notes.push(newNote);
+            currentNote = newNote;
+            showEditorScreen();
+            saveData();
+        }
+
+        function renderNotes() {
+            const list = document.getElementById('note-list');
+            list.innerHTML = '';
+            
+            if (!currentSubcategory.notes) {
+                currentSubcategory.notes = [];
+            }
+            
+            // Trier par date (plus ancienne en premier)
+            const sortedNotes = [...currentSubcategory.notes].sort((a, b) => 
+                new Date(a.createdAt) - new Date(b.createdAt)
+            );
+            
+            sortedNotes.forEach((note, index) => {
+                const li = document.createElement('li');
+                li.className = 'note-item';
+                
+                const preview = document.createElement('div');
+                preview.className = 'note-preview';
+                
+                const lines = note.content.split('\n').slice(0, 2);
+                preview.innerHTML = `
+                    <div class="note-title">${lines[0] || 'Note sans titre'}</div>
+                    <div class="note-date">${new Date(note.createdAt).toLocaleString()}</div>
+                `;
+                
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.innerHTML = '🗑️';
+                deleteBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    deleteNote(note.id);
+                };
+                
+                li.appendChild(preview);
+                li.appendChild(deleteBtn);
+                
+                li.addEventListener('click', () => {
+                    currentNote = note;
+                    showEditorScreen();
+                });
+                
+                list.appendChild(li);
+            });
+        }
+
+        function deleteNote(noteId) {
+            currentSubcategory.notes = currentSubcategory.notes.filter(note => note.id !== noteId);
+            renderNotes();
+            saveData();
+        }
+
+        // Gestion de l'éditeur
+        function loadNoteContent() {
+            document.getElementById('shared-note-1').value = appData.sharedNotes.note1;
+            document.getElementById('shared-note-2').value = appData.sharedNotes.note2;
+            document.getElementById('note-content').value = currentNote.content;
+            
+            // Charger les images
+            const imageContainer = document.getElementById('image-container');
+            imageContainer.innerHTML = '';
+            
+            if (currentNote.images) {
+                currentNote.images.forEach(imageData => {
+                    const img = document.createElement('img');
+                    img.src = imageData;
+                    img.className = 'image-preview';
+                    img.onclick = () => showFullscreenImage(imageData);
+                    imageContainer.appendChild(img);
+                });
+            }
+        }
+
+        // Auto-sauvegarde
+        document.addEventListener('input', function(e) {
+            if (e.target.id === 'shared-note-1') {
+                appData.sharedNotes.note1 = e.target.value;
+                updateAllSharedNotes();
+            } else if (e.target.id === 'shared-note-2') {
+                appData.sharedNotes.note2 = e.target.value;
+                updateAllSharedNotes();
+            } else if (e.target.id === 'note-content') {
+                currentNote.content = e.target.value;
+            }
+            saveData();
+        });
+
+        function updateAllSharedNotes() {
+            // Mettre à jour toutes les notes partagées dans la sous-catégorie
+            if (currentSubcategory && currentSubcategory.notes) {
+                currentSubcategory.notes.forEach(note => {
+                    // Les notes partagées sont mises à jour globalement
+                });
+            }
+        }
+
+        // Gestion des images
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    if (!currentNote.images) {
+                        currentNote.images = [];
+                    }
+                    currentNote.images.push(e.target.result);
+                    loadNoteContent();
+                    saveData();
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function showFullscreenImage(imageData) {
+            const fullscreen = document.createElement('div');
+            fullscreen.className = 'fullscreen-image';
+            fullscreen.innerHTML = `<img src="${imageData}" alt="Image">`;
+            fullscreen.onclick = () => document.body.removeChild(fullscreen);
+            document.body.appendChild(fullscreen);
+        }
+
+        // Gestion des modales
+        function showModal(title, value) {
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-input').value = value;
+            document.getElementById('modal').style.display = 'block';
+        }
+
+        function hideModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+
+        function confirmModal() {
+            const value = document.getElementById('modal-input').value.trim();
+            if (!value) return;
+            
+            switch(modalAction) {
+                case 'create-category':
+                    appData.categories.push({ name: value, subcategories: [] });
+                    renderCategories();
+                    break;
+                case 'create-subcategory':
+                    if (!currentCategory.subcategories) {
+                        currentCategory.subcategories = [];
+                    }
+                    currentCategory.subcategories.push({ name: value, notes: [] });
+                    renderSubcategories();
+                    break;
+                case 'rename-category':
+                    appData.categories[contextItem.index].name = value;
+                    renderCategories();
+                    break;
+                case 'rename-subcategory':
+                    currentCategory.subcategories[contextItem.index].name = value;
+                    renderSubcategories();
+                    break;
+            }
+            
+            hideModal();
+            saveData();
+        }
+
+        function showContextModal() {
+            document.getElementById('context-modal').style.display = 'block';
+        }
+
+        function hideContextModal() {
+            document.getElementById('context-modal').style.display = 'none';
+        }
+
+        function renameItem() {
+            hideContextModal();
+            
+            if (contextItem.type === 'category') {
+                modalAction = 'rename-category';
+                showModal('Renommer la catégorie', appData.categories[contextItem.index].name);
+            } else if (contextItem.type === 'subcategory') {
+                modalAction = 'rename-subcategory';
+                showModal('Renommer la sous-catégorie', currentCategory.subcategories[contextItem.index].name);
+            }
+        }
+
+        function deleteItem() {
+            hideContextModal();
+            
+            if (contextItem.type === 'category') {
+                appData.categories.splice(contextItem.index, 1);
+                renderCategories();
+            } else if (contextItem.type === 'subcategory') {
+                currentCategory.subcategories.splice(contextItem.index, 1);
+                renderSubcategories();
+            }
+            
+            saveData();
+        }
+
+        // Drag and drop
+        function handleDragStart(e) {
+            draggedElement = e.target;
+            e.target.classList.add('dragging');
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.target.classList.add('drag-over');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            e.target.classList.remove('drag-over');
+            
+            if (draggedElement !== e.target) {
+                const draggedIndex = parseInt(draggedElement.dataset.index);
+                const targetIndex = parseInt(e.target.dataset.index);
+                
+                if (draggedElement.classList.contains('category-item')) {
+                    // Réorganiser les catégories
+                    const item = appData.categories.splice(draggedIndex, 1)[0];
+                    appData.categories.splice(targetIndex, 0, item);
+                    renderCategories();
+                } else if (draggedElement.classList.contains('subcategory-item')) {
+                    // Réorganiser les sous-catégories
+                    const item = currentCategory.subcategories.splice(draggedIndex, 1)[0];
+                    currentCategory.subcategories.splice(targetIndex, 0, item);
+                    renderSubcategories();
+                }
+                
+                saveData();
+            }
+        }
+
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+            document.querySelectorAll('.drag-over').forEach(el => {
+                el.classList.remove('drag-over');
+            });
+        }
+
+        // Gestion des paramètres
+        function showSettings() {
+            showScreen('settings-screen');
+        }
+
+        function hideSettings() {
+            showScreen('home-screen');
+        }
+
+        function toggleDarkMode() {
+            const toggle = document.getElementById('dark-mode-toggle');
+            appData.settings.darkMode = !appData.settings.darkMode;
+            
+            if (appData.settings.darkMode) {
+                document.body.classList.add('dark-mode');
+                toggle.classList.add('active');
+            } else {
+                document.body.classList.remove('dark-mode');
+                toggle.classList.remove('active');
+            }
+            
+            saveData();
+        }
+
+        function updateFontSize() {
+            const fontSize = document.getElementById('font-size-range').value;
+            appData.settings.fontSize = parseInt(fontSize);
+            document.getElementById('font-size-display').textContent = fontSize + 'px';
+            
+            // Appliquer la taille de police
+            document.documentElement.style.setProperty('--user-font-size', fontSize + 'px');
+            
+            // Mettre à jour les styles des éléments de contenu
+            const style = document.createElement('style');
+            style.textContent = `
+                .note-content, .shared-note, .category-item, .subcategory-item, .note-preview {
+                    font-size: ${fontSize}px !important;
+                }
+            `;
+            document.head.appendChild(style);
+            
+            saveData();
+        }
+
+        function exportData() {
+            const dataStr = JSON.stringify(appData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'notes_backup_' + new Date().toISOString().split('T')[0] + '.json';
+            link.click();
+            
+            URL.revokeObjectURL(url);
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const importedData = JSON.parse(e.target.result);
+                        appData = importedData;
+                        
+                        // Appliquer les paramètres importés
+                        if (appData.settings.darkMode) {
+                            document.body.classList.add('dark-mode');
+                            document.getElementById('dark-mode-toggle').classList.add('active');
+                        }
+                        
+                        document.getElementById('font-size-range').value = appData.settings.fontSize;
+                        updateFontSize();
+                        
+                        renderCategories();
+                        saveData();
+                        
+                        alert('Données importées avec succès !');
+                    } catch (error) {
+                        alert('Erreur lors de l\'importation des données');
+                    }
+                };
+                reader.readAsText(file);
+            }
+        }
+
+        function deleteAllData() {
+            if (confirm('Êtes-vous sûr de vouloir supprimer toutes les données ?')) {
+                // Supprimer de localStorage
+                localStorage.removeItem('notesAppData');
+                
+                appData = {
+                    categories: [],
+                    sharedNotes: { note1: '', note2: '' },
+                    settings: {
+                        darkMode: false,
+                        fontSize: 19
+                    }
+                };
+                
+                // Réinitialiser l'interface
+                document.body.classList.remove('dark-mode');
+                document.getElementById('dark-mode-toggle').classList.remove('active');
+                document.getElementById('font-size-range').value = 19;
+                updateFontSize();
+                
+                renderCategories();
+                showHomeScreen();
+                
+                console.log('Toutes les données ont été supprimées');
+            }
+        }
+
+        // Gestion des données
+        function saveData() {
+            try {
+                const dataToSave = JSON.stringify(appData);
+                // Utiliser localStorage pour une persistance réelle
+                localStorage.setItem('notesAppData', dataToSave);
+                console.log('Données sauvegardées avec succès');
+            } catch (error) {
+                console.error('Erreur lors de la sauvegarde:', error);
+            }
+        }
+
+        function loadData() {
+            try {
+                // Charger les données depuis localStorage
+                const savedData = localStorage.getItem('notesAppData');
+                
+                if (savedData) {
+                    appData = JSON.parse(savedData);
+                    console.log('Données chargées avec succès');
+                    
+                    // Vérifier l'intégrité des données
+                    if (!appData.categories) appData.categories = [];
+                    if (!appData.sharedNotes) appData.sharedNotes = { note1: '', note2: '' };
+                    if (!appData.settings) appData.settings = { darkMode: false, fontSize: 19 };
+                } else {
+                    console.log('Aucune donnée sauvegardée trouvée, initialisation des données par défaut');
+                    appData = {
+                        categories: [],
+                        sharedNotes: { note1: '', note2: '' },
+                        settings: {
+                            darkMode: false,
+                            fontSize: 19
+                        }
+                    };
+                }
+                
+                renderCategories();
+            } catch (error) {
+                console.error('Erreur lors du chargement des données:', error);
+                appData = {
+                    categories: [],
+                    sharedNotes: { note1: '', note2: '' },
+                    settings: {
+                        darkMode: false,
+                        fontSize: 19
+                    }
+                };
+            }
+        }
+
+        // Gestion PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('data:text/javascript;base64,Y29uc3QgQ0FDSEVfTkFNRSA9ICdub3Rlcy1hcHAtdjEnOwpjb25zdCB1cmxzVG9DYWNoZSA9IFsKICAnLycsICAnL2luZGV4Lmh0bWwnCl07CgpzZWxmLmFkZEV2ZW50TGlzdGVuZXIoJ2luc3RhbGwnLCBmdW5jdGlvbihldmVudCkgewogIGV2ZW50LndhaXRVbnRpbCgKICAgIGNhY2hlcy5vcGVuKENBQ0hFX05BTUUpLnRoZW4oZnVuY3Rpb24oY2FjaGUpIHsKICAgICAgcmV0dXJuIGNhY2hlLmFkZEFsbCh1cmxzVG9DYWNoZSk7CiAgICB9KQogICk7Cn0pOwoKc2VsZi5hZGRFdmVudExpc3RlbmVyKCdmZXRjaCcsIGZ1bmN0aW9uKGV2ZW50KSB7CiAgZXZlbnQucmVzcG9uZFdpdGgoCiAgICBjYWNoZXMubWF0Y2goZXZlbnQucmVxdWVzdCkKICAgICAgLnRoZW4oZnVuY3Rpb24ocmVzcG9uc2UpIHsKICAgICAgICBpZiAocmVzcG9uc2UpIHsKICAgICAgICAgIHJldHVybiByZXNwb25zZTsKICAgICAgICB9CiAgICAgICAgcmV0dXJuIGZldGNoKGV2ZW50LnJlcXVlc3QpOwogICAgICAgIH0KICAgICAgKQogICk7Cn0pOw==')
+                .then(function(registration) {
+                    console.log('Service Worker enregistré avec succès');
+                }).catch(function(error) {
+                    console.log('Échec de l\'enregistrement du Service Worker');
+                });
+            });
+        }
+
+        // Gestion des événements clavier
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                hideModal();
+                hideContextModal();
+            }
+        });
+
+        // Gestion du retour Android
+        window.addEventListener('popstate', function(e) {
+            const currentScreen = document.querySelector('.screen.active');
+            if (currentScreen) {
+                switch(currentScreen.id) {
+                    case 'subcategory-screen':
+                        showHomeScreen();
+                        break;
+                    case 'notes-screen':
+                        showSubcategoryScreen();
+                        break;
+                    case 'editor-screen':
+                        showNotesScreen();
+                        break;
+                    case 'settings-screen':
+                        showHomeScreen();
+                        break;
+                }
+            }
+        });
+
+        // Prévenir la fermeture accidentelle
+        window.addEventListener('beforeunload', function(e) {
+            saveData();
+        });
+
+        // Gestion de l'orientation
+        window.addEventListener('orientationchange', function() {
+            setTimeout(function() {
+                // Réajuster l'interface si nécessaire
+                if (document.querySelector('.fullscreen-image')) {
+                    // Fermer l'image en plein écran si l'orientation change
+                    document.querySelectorAll('.fullscreen-image').forEach(el => {
+                        el.remove();
+                    });
+                }
+            }, 100);
+        });
+
+        // Gestion tactile améliorée
+        let touchStartY = 0;
+        let touchEndY = 0;
+
+        document.addEventListener('touchstart', function(e) {
+            touchStartY = e.changedTouches[0].screenY;
+        });
+
+        document.addEventListener('touchend', function(e) {
+            touchEndY = e.changedTouches[0].screenY;
+        });
+
+        // Auto-focus sur les champs de saisie
+        document.addEventListener('click', function(e) {
+            if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') {
+                setTimeout(() => {
+                    e.target.focus();
+                }, 100);
+            }
+        });
+    </script>
+</body>
+</html>
